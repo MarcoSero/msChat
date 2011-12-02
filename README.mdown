@@ -1,0 +1,14 @@
+# msChat
+###A simple Java-based chat for educational purposes.
+
+##How to Use
+If you want test client and server in the same machine, just compile with
+
+		$ javac *.java
+		
+and run it in two separate terminal windows
+
+		$ java msServer
+		$ java msClient
+
+Instead, if you want test it in LAN or VPN or Internet, you have to set the variable "IP" in file msClient.java with the IP address (local or global) of machine where you want run msServer
