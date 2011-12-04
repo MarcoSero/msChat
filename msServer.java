@@ -13,7 +13,7 @@ public class msServer {
 	
 	static final int PORT = 8189;
 	
-	public static void main(String[] args ) {
+	public static void main(String[] args ) throws InterruptedException {
 		
 		try {
 			
@@ -25,8 +25,6 @@ public class msServer {
 			System.out.println("Waiting for client connection...");
 			Socket incoming = s.accept();
 			
-			
-			
 			try {
 				System.out.println("Setting up streams...");
 				InputStream inStream = incoming.getInputStream();
@@ -35,43 +33,37 @@ public class msServer {
 				Scanner in = new Scanner(inStream);
 				PrintWriter out = new PrintWriter(outStream, true /* autoFlush */);
 
-				Scanner stin = new Scanner(System.in);
+				Scanner keyboard = new Scanner(System.in);
 				
 				System.out.println("Insert your nickname:");
-				String chatName = stin.nextLine();
+				String chatName = keyboard.nextLine();
 				
 				System.out.println("\nConnection established!\n");
 				out.println(chatName + " >> Connection established! Enter BYE to exit." );
 	
 				System.out.println("Waiting for client...");
 
-	            // echo client input
-				boolean done = false;
-				while (!done && in.hasNextLine()) {
-					
-					// waiting for an input from client
-					String line = in.nextLine();
-					System.out.println(line);
-					
-					// waiting for an input
-					System.out.print(chatName + " >> ");
-					String lineout = stin.nextLine();
-					out.println(chatName + " >> " + lineout);
-					
-					System.out.println("Waiting for client...");
-					
-					
-				}
+
+				Readers read = new Readers(in, keyboard, out, chatName);
+				Readers.ReadSocket readS = read.getReadSocket();
+				Readers.ReadKeyboard readK = read.getReadKeyboard();
+									
+				readS.start();
+				readK.start();
+				
+				readS.join();
+				readK.join();
+	
 			}
 			finally {
 				System.out.println("Connection closed!");
 				incoming.close();
 			}
-      }
-      catch (IOException e) {
-         e.printStackTrace();
-      }
+      	} catch (ConnectException err) {
+			System.out.println("You have to start msServer first.");
+		} catch (IOException e) {
+         	e.printStackTrace();
+      	}
    }
 }
-
 

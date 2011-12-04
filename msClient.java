@@ -14,11 +14,14 @@ public class msClient {
 	
 	static final int PORT = 8189;
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException {
 		try {
 			
+			/////////////////// SET BELOW VARIABLE ///////////////////
 			final String IP = InetAddress.getLocalHost().getHostName();
-         	System.out.println("Starting chat on: '" + IP + "' as client");
+			/////////////////// SET ABOVE VARIABLE ///////////////////
+			
+         	System.out.println("Trying to start connection with server on '" + IP + "'...");
          	Socket s = new Socket(IP, PORT);
 			
 			try {
@@ -27,42 +30,31 @@ public class msClient {
 	            Scanner in = new Scanner(inStream);
 	            OutputStream outStream = s.getOutputStream();
 	            PrintWriter out = new PrintWriter(outStream, true /* autoFlush */);
-	            Scanner stin = new Scanner(System.in);
+	            Scanner keyboard = new Scanner(System.in);
 	
 				System.out.println("Insert your nickname:");
-				String chatName = stin.nextLine();
+				String chatName = keyboard.nextLine();
 				
 	            String line = in.nextLine(); // waiting for OK from server
 	            System.out.println(line);
 
-	            boolean done = false;
-	            while (!done) { // && in.hasNextLine())
-					
-					// waiting for an input
-					System.out.print(chatName + " >> ");
-					String lineout = stin.nextLine();
-					out.println(chatName + " >> " + lineout);
-					
-					if (lineout.equals("BYE")) {
-						done = true;
-						break;
-					}
-					
-					// waiting for an input from server
-					System.out.println("Waiting for server...");
-					line = in.nextLine();
-					System.out.println(line);
-
-	            }
-	         }
-         finally
-         {
-            s.close();
-         }
-      }
-      catch (IOException e)
-      {
-         e.printStackTrace();
-      }
+	
+				Readers read = new Readers(in, keyboard, out, chatName);
+				Readers.ReadSocket readS = read.getReadSocket();
+				Readers.ReadKeyboard readK = read.getReadKeyboard();
+				
+				readS.start();
+				readK.start();
+				readS.join();
+				readK.join();
+				
+	        } finally {
+            	s.close();
+         	}
+      	} catch (ConnectException err) {
+			System.out.println("You have to start msServer first.");
+		} catch (IOException e) {
+         	e.printStackTrace();
+      	}
    }
 }
